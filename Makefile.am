@@ -35,8 +35,7 @@ bin_PROGRAMS = \
 
 systemadm_SOURCES = \
 	src/systemadm.vala \
-	src/systemd-interfaces.vala \
-	src/wraplabel.vala
+	src/systemd-interfaces.vala
 
 systemadm_CFLAGS = \
 	$(AM_CFLAGS) \
@@ -49,7 +48,7 @@ systemadm_CFLAGS = \
 
 systemadm_VALAFLAGS = \
 	--pkg=posix \
-	--pkg=gtk+-2.0 \
+	--pkg=gtk+-3.0 \
 	--pkg=$(GEE_PACKAGE) \
 	-g
 
@@ -84,7 +83,7 @@ systemd_gnome_ask_password_agent_CFLAGS = \
 
 systemd_gnome_ask_password_agent_VALAFLAGS = \
 	--pkg=posix \
-	--pkg=gtk+-2.0 \
+	--pkg=gtk+-3.0 \
 	--pkg=linux \
 	--pkg=gio-unix-2.0 \
 	--pkg=libnotify \

@@ -41,16 +41,21 @@ public class LeftLabel : Label {
         public LeftLabel(string? text = null) {
                 if (text != null)
                         set_markup("<b>%s</b>".printf(text));
-                set_alignment(0, 0);
-                set_padding(6, 0);
+                halign = Align.START;
+                valign = Align.START;
         }
 }
 
-public class RightLabel : WrapLabel {
+public class RightLabel : Label {
 
         public RightLabel(string? text = null) {
                 set_selectable(true);
                 set_text_or_na(text);
+                wrap = true;
+                wrap_mode = Pango.WrapMode.WORD_CHAR;
+                halign = Align.START;
+                valign = Align.START;
+                hexpand = true;
         }
 
         public void set_text_or_na(string? text = null) {
@@ -112,7 +117,7 @@ public class MainWindow : Window {
         private RightLabel job_state_label;
         private RightLabel job_type_label;
 
-        private ComboBox unit_type_combo_box;
+        private ComboBoxText unit_type_combo_box;
         private CheckButton inactive_checkbox;
 
         public MainWindow() throws IOError {
@@ -125,16 +130,16 @@ public class MainWindow : Window {
                 Notebook notebook = new Notebook();
                 add(notebook);
 
-                Box unit_vbox = new VBox(false, 12);
+                Box unit_vbox = new Box(Orientation.VERTICAL, 12);
                 notebook.append_page(unit_vbox, new Label("Units"));
                 unit_vbox.set_border_width(12);
 
-                Box job_vbox = new VBox(false, 12);
+                Box job_vbox = new Box(Orientation.VERTICAL, 12);
                 notebook.append_page(job_vbox, new Label("Jobs"));
                 job_vbox.set_border_width(12);
 
-                unit_type_combo_box = new ComboBox.text();
-                Box type_hbox = new HBox(false, 6);
+                unit_type_combo_box = new ComboBoxText();
+                Box type_hbox = new Box(Orientation.HORIZONTAL, 6);
                 type_hbox.pack_start(unit_type_combo_box, false, false, 0);
                 unit_vbox.pack_start(type_hbox, false, false, 0);
 
@@ -164,7 +169,7 @@ public class MainWindow : Window {
                 unit_load_entry.activate.connect(on_unit_load);
                 unit_load_button.clicked.connect(on_unit_load);
 
-                Box unit_load_hbox = new HBox(false, 6);
+                Box unit_load_hbox = new Box(Orientation.HORIZONTAL, 6);
                 unit_load_hbox.pack_start(unit_load_entry, false, true, 0);
                 unit_load_hbox.pack_start(unit_load_button, false, true, 0);
 
@@ -241,52 +246,52 @@ public class MainWindow : Window {
 
                 unit_fragment_path_label.set_track_visited_links(false);
 
-                Table unit_table = new Table(8, 6, false);
-                unit_table.set_row_spacings(6);
-                unit_table.set_border_width(0);
-                unit_vbox.pack_start(unit_table, false, true, 0);
+                Grid unit_grid = new Grid();
+                unit_grid.column_spacing = 6;
+                unit_grid.row_spacing = 6;
+                unit_vbox.pack_start(unit_grid, false, true, 0);
 
-                Table job_table = new Table(2, 2, false);
-                job_table.set_row_spacings(6);
-                job_table.set_border_width(0);
-                job_vbox.pack_start(job_table, false, true, 0);
+                Grid job_grid = new Grid();
+                job_grid.column_spacing = 6;
+                job_grid.column_spacing = 6;
+                job_vbox.pack_start(job_grid, false, true, 0);
 
-                unit_table.attach(new LeftLabel("Id:"),                     0, 1, 0, 1, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(unit_id_label,                            1, 6, 0, 1, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(new LeftLabel("Description:"),            0, 1, 1, 2, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(unit_description_label,                   1, 6, 1, 2, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(new LeftLabel("Dependencies:"),           0, 1, 2, 3, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(unit_dependency_label,                    1, 6, 2, 3, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(new LeftLabel("Fragment Path:"),          0, 1, 3, 4, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(unit_fragment_path_label,                 1, 6, 3, 4, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(new LeftLabel("Control Group:"),          0, 1, 4, 5, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(unit_cgroup_label,                        1, 6, 4, 5, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
+                unit_grid.attach(new LeftLabel("Id:"),                     0, 0, 1, 1);
+                unit_grid.attach(unit_id_label,                            1, 0, 5, 1);
+                unit_grid.attach(new LeftLabel("Description:"),            0, 1, 1, 1);
+                unit_grid.attach(unit_description_label,                   1, 1, 5, 1);
+                unit_grid.attach(new LeftLabel("Dependencies:"),           0, 2, 1, 1);
+                unit_grid.attach(unit_dependency_label,                    1, 2, 5, 1);
+                unit_grid.attach(new LeftLabel("Fragment Path:"),          0, 3, 1, 1);
+                unit_grid.attach(unit_fragment_path_label,                 1, 3, 5, 1);
+                unit_grid.attach(new LeftLabel("Control Group:"),          0, 4, 1, 1);
+                unit_grid.attach(unit_cgroup_label,                        1, 4, 5, 1);
+                unit_grid.attach(new LeftLabel("Load State:"),             0, 5, 1, 1);
+                unit_grid.attach(unit_load_state_label,                    1, 5, 5, 1);
 
-                unit_table.attach(new LeftLabel("Load State:"),             0, 1, 5, 6, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(unit_load_state_label,                    1, 2, 5, 6, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(new LeftLabel("Active State:"),           0, 1, 6, 7, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(unit_active_state_label,                  1, 2, 6, 7, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(new LeftLabel("Unit State:"),             0, 1, 7, 8, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(unit_sub_state_label,                     1, 2, 7, 8, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
+                unit_grid.attach(new LeftLabel("Active State:"),           0, 6, 1, 1);
+                unit_grid.attach(unit_active_state_label,                  1, 6, 1, 1);
+                unit_grid.attach(new LeftLabel("Unit State:"),             0, 7, 1, 1);
+                unit_grid.attach(unit_sub_state_label,                     1, 7, 1, 1);
 
-                unit_table.attach(new LeftLabel("Activated:"),              2, 3, 6, 7, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(unit_active_enter_timestamp_label,        3, 4, 6, 7, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(new LeftLabel("Deactivated:"),            2, 3, 7, 8, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(unit_active_exit_timestamp_label,         3, 4, 7, 8, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
+                unit_grid.attach(new LeftLabel("Activated:"),              2, 6, 1, 1);
+                unit_grid.attach(unit_active_enter_timestamp_label,        3, 6, 1, 1);
+                unit_grid.attach(new LeftLabel("Deactivated:"),            2, 7, 1, 1);
+                unit_grid.attach(unit_active_exit_timestamp_label,         3, 7, 1, 1);
 
-                unit_table.attach(new LeftLabel("Can Start/Stop:"),         4, 5, 6, 7, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(unit_can_start_label,                     5, 6, 6, 7, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(new LeftLabel("Can Reload:"),             4, 5, 7, 8, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                unit_table.attach(unit_can_reload_label,                    5, 6, 7, 8, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
+                unit_grid.attach(new LeftLabel("Can Start/Stop:"),         4, 6, 1, 1);
+                unit_grid.attach(unit_can_start_label,                     5, 6, 1, 1);
+                unit_grid.attach(new LeftLabel("Can Reload:"),             4, 7, 1, 1);
+                unit_grid.attach(unit_can_reload_label,                    5, 7, 1, 1);
 
-                job_table.attach(new LeftLabel("Id:"),                      0, 1, 0, 1, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                job_table.attach(job_id_label,                              1, 2, 0, 1, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                job_table.attach(new LeftLabel("State:"),                   0, 1, 1, 2, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                job_table.attach(job_state_label,                           1, 2, 1, 2, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                job_table.attach(new LeftLabel("Type:"),                    0, 1, 2, 3, AttachOptions.FILL, AttachOptions.FILL, 0, 0);
-                job_table.attach(job_type_label,                            1, 2, 2, 3, AttachOptions.EXPAND|AttachOptions.FILL, AttachOptions.FILL, 0, 0);
+                job_grid.attach(new LeftLabel("Id:"),                      0, 1, 1, 1);
+                job_grid.attach(job_id_label,                              1, 1, 1, 1);
+                job_grid.attach(new LeftLabel("State:"),                   0, 2, 1, 1);
+                job_grid.attach(job_state_label,                           1, 2, 1, 1);
+                job_grid.attach(new LeftLabel("Type:"),                    0, 3, 1, 1);
+                job_grid.attach(job_type_label,                            1, 3, 1, 1);
 
-                ButtonBox bbox = new HButtonBox();
+                ButtonBox bbox = new ButtonBox(Orientation.HORIZONTAL);
                 bbox.set_layout(ButtonBoxStyle.START);
                 bbox.set_spacing(6);
                 unit_vbox.pack_start(bbox, false, true, 0);
@@ -306,7 +311,7 @@ public class MainWindow : Window {
                 bbox.pack_start(restart_button, false, true, 0);
                 bbox.pack_start(reload_button, false, true, 0);
 
-                bbox = new HButtonBox();
+                bbox = new ButtonBox(Orientation.HORIZONTAL);
                 bbox.set_layout(ButtonBoxStyle.START);
                 bbox.set_spacing(6);
                 job_vbox.pack_start(bbox, false, true, 0);

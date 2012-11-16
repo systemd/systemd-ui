@@ -32,7 +32,6 @@ public class PasswordDialog : Dialog {
 
         public PasswordDialog(string message, string icon) {
                 set_title("System Password");
-                set_has_separator(false);
                 set_border_width(8);
                 set_default_response(ResponseType.OK);
                 set_icon_name(icon);
@@ -42,14 +41,14 @@ public class PasswordDialog : Dialog {
 
                 Container content = (Container) get_content_area();
 
-                Box hbox = new HBox(false, 16);
+                Box hbox = new Box(Orientation.HORIZONTAL, 16);
                 hbox.set_border_width(8);
                 content.add(hbox);
 
                 Image image = new Image.from_icon_name(icon, IconSize.DIALOG);
                 hbox.pack_start(image, false, false);
 
-                Box vbox = new VBox(false, 8);
+                Box vbox = new Box(Orientation.VERTICAL, 8);
                 hbox.pack_start(vbox, true, true);
 
                 Label label = new Label(message);
