@@ -5,4 +5,4 @@ Exec=systemadm
 Icon=applications-system
 Terminal=false
 Type=Application
-Categories=System
+Categories=System;
