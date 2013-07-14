@@ -145,6 +145,8 @@ public class MainWindow : Window {
 
                 unit_type_combo_box.append_text("All unit types");
                 unit_type_combo_box.append_text("Targets");
+                unit_type_combo_box.append_text("Slices");
+                unit_type_combo_box.append_text("Scopes");
                 unit_type_combo_box.append_text("Services");
                 unit_type_combo_box.append_text("Devices");
                 unit_type_combo_box.append_text("Mounts");
@@ -933,22 +935,26 @@ public class MainWindow : Window {
                 case 1:
                         return id.has_suffix(".target");
                 case 2:
-                        return id.has_suffix(".service");
+                        return id.has_suffix(".slice");
                 case 3:
-                        return id.has_suffix(".device");
+                        return id.has_suffix(".scope");
                 case 4:
-                        return id.has_suffix(".mount");
+                        return id.has_suffix(".service");
                 case 5:
-                        return id.has_suffix(".automount");
+                        return id.has_suffix(".device");
                 case 6:
-                        return id.has_suffix(".swap");
+                        return id.has_suffix(".mount");
                 case 7:
-                        return id.has_suffix(".socket");
+                        return id.has_suffix(".automount");
                 case 8:
-                        return id.has_suffix(".path");
+                        return id.has_suffix(".swap");
                 case 9:
-                        return id.has_suffix(".timer");
+                        return id.has_suffix(".socket");
                 case 10:
+                        return id.has_suffix(".path");
+                case 11:
+                        return id.has_suffix(".timer");
+                case 12:
                         return id.has_suffix(".snapshot");
                 default:
                         assert(false);
