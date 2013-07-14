@@ -256,9 +256,10 @@ int main(string[] args) {
 
                 MyStatusIcon i = new MyStatusIcon();
                 Gtk.main();
-
-        } catch (GLib.Error e) {
+        } catch (IOError e) {
                 show_error(e.message);
+        } catch (GLib.Error e) {
+                Posix.stderr.printf("%s\n", e.message);
         }
 
         return 0;
