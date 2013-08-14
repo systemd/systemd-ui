@@ -213,6 +213,7 @@ public class MyStatusIcon : StatusIcon {
                     result == ResponseType.DELETE_EVENT)
                         return;
 
+                Pid child_pid;
                 int to_process;
 
                 try {
@@ -220,12 +221,15 @@ public class MyStatusIcon : StatusIcon {
                                         null,
                                         { "/usr/bin/pkexec", "/lib/systemd/systemd-reply-password", result == ResponseType.OK ? "1" : "0", socket },
                                         null,
-                                        0,
+                                        SpawnFlags.DO_NOT_REAP_CHILD,
                                         null,
-                                        null,
+                                        out child_pid,
                                         out to_process,
                                         null,
                                         null);
+                        ChildWatch.add(child_pid, (pid, status) => {
+                                Process.close_pid(pid);
+                        });
 
                         OutputStream stream = new UnixOutputStream(to_process, true);
 #if VALA_0_12
