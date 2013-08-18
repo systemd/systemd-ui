@@ -213,7 +213,8 @@ public class MyStatusIcon : StatusIcon {
                 password_dialog = null;
 
                 if (result == ResponseType.REJECT ||
-                    result == ResponseType.DELETE_EVENT)
+                    result == ResponseType.DELETE_EVENT ||
+                    result == ResponseType.CANCEL)
                         return;
 
                 Pid child_pid;
