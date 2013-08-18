@@ -188,6 +188,7 @@ public class MyStatusIcon : StatusIcon {
                 n.closed.connect(() => {
                         set_visible(true);
                 });
+                n.add_action("enter_pw", "Enter password", status_icon_activate);
                 n.show();
 
                 return true;
