@@ -467,8 +467,12 @@ public class MainWindow : Window {
                 string color;
                 switch (u.sub_state) {
                 case "active": color = "blue"; break;
-                case "dead": color = "red"; break;
+                case "dead": color = "black"; break;
                 case "running": color = "green"; break;
+                case "plugged": color = "light blue"; break;
+                case "mounted": color = "light green"; break;
+                case "exited": color = "brown"; break;
+                case "failed": color = "red"; break;
                 default: color = "black"; break;
                 }
                 string span = "<span underline='none' color='" + color + "'>"
