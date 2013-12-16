@@ -73,6 +73,14 @@ public class RightLabel : Label {
         }
 }
 
+public ScrolledWindow new_scrolled_window(Widget widget) {
+       ScrolledWindow scroll = new ScrolledWindow(null, null);
+       scroll.set_policy(PolicyType.AUTOMATIC, PolicyType.AUTOMATIC);
+       scroll.set_shadow_type(ShadowType.IN);
+       scroll.add(widget);
+       return scroll;
+}
+
 public class MainWindow : Window {
 
         private string? current_unit_id;
@@ -213,17 +221,21 @@ public class MainWindow : Window {
                 new_column(job_view, 2, "Type");
                 new_column(job_view, 3, "State");
 
-                ScrolledWindow scroll = new ScrolledWindow(null, null);
-                scroll.set_policy(PolicyType.AUTOMATIC, PolicyType.AUTOMATIC);
-                scroll.set_shadow_type(ShadowType.IN);
-                scroll.add(unit_view);
-                unit_vbox.pack_start(scroll, true, true, 0);
+                Paned paned = new Paned(Orientation.VERTICAL);
+                unit_vbox.pack_start(paned, true, true, 0);
 
-                scroll = new ScrolledWindow(null, null);
-                scroll.set_policy(PolicyType.AUTOMATIC, PolicyType.AUTOMATIC);
-                scroll.set_shadow_type(ShadowType.IN);
-                scroll.add(job_view);
-                job_vbox.pack_start(scroll, true, true, 0);
+                paned.pack1(new_scrolled_window(unit_view), true, true);
+
+                Box unit_vbox2 = new Box(Orientation.VERTICAL, 12);
+                paned.pack2(new_scrolled_window(unit_vbox2), false, true);
+
+                paned = new Paned(Orientation.VERTICAL);
+                job_vbox.pack_start(paned, true, true, 0);
+
+                paned.pack1(new_scrolled_window(job_view), true, true);
+
+                Box job_vbox2 = new Box(Orientation.VERTICAL, 12);
+                paned.pack2(new_scrolled_window(job_vbox2), false, true);
 
                 unit_id_label = new RightLabel();
                 unit_dependency_label = new RightLabel();
@@ -251,12 +263,12 @@ public class MainWindow : Window {
                 Grid unit_grid = new Grid();
                 unit_grid.column_spacing = 6;
                 unit_grid.row_spacing = 6;
-                unit_vbox.pack_start(unit_grid, false, true, 0);
+                unit_vbox2.pack_start(unit_grid, false, true, 0);
 
                 Grid job_grid = new Grid();
                 job_grid.column_spacing = 6;
                 job_grid.column_spacing = 6;
-                job_vbox.pack_start(job_grid, false, true, 0);
+                job_vbox2.pack_start(job_grid, false, true, 0);
 
                 unit_grid.attach(new LeftLabel("Id:"),                     0, 0, 1, 1);
                 unit_grid.attach(unit_id_label,                            1, 0, 5, 1);
@@ -296,7 +308,7 @@ public class MainWindow : Window {
                 ButtonBox bbox = new ButtonBox(Orientation.HORIZONTAL);
                 bbox.set_layout(ButtonBoxStyle.START);
                 bbox.set_spacing(6);
-                unit_vbox.pack_start(bbox, false, true, 0);
+                unit_vbox2.pack_start(bbox, false, true, 0);
 
                 start_button = new Button.with_mnemonic("_Start");
                 stop_button = new Button.with_mnemonic("Sto_p");
@@ -316,7 +328,7 @@ public class MainWindow : Window {
                 bbox = new ButtonBox(Orientation.HORIZONTAL);
                 bbox.set_layout(ButtonBoxStyle.START);
                 bbox.set_spacing(6);
-                job_vbox.pack_start(bbox, false, true, 0);
+                job_vbox2.pack_start(bbox, false, true, 0);
 
                 cancel_button = new Button.with_mnemonic("_Cancel");
 
