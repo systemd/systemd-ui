@@ -163,7 +163,7 @@ public class MainWindow : Window {
                 unit_type_combo_box.append_text("Sockets");
                 unit_type_combo_box.append_text("Paths");
                 unit_type_combo_box.append_text("Timers");
-                unit_type_combo_box.append_text("Snapshots");
+                unit_type_combo_box.append_text("Snapshots"); // adjust index in server_on_snapshot
                 unit_type_combo_box.set_active(0); // Show All
                 unit_type_combo_box.changed.connect(unit_type_changed);
 
@@ -997,8 +997,7 @@ public class MainWindow : Window {
                         manager.create_snapshot();
 
                         if (unit_type_combo_box.get_active() != 0)
-                                unit_type_combo_box.set_active(8);
-
+                                unit_type_combo_box.set_active(12);
                 } catch (Error e) {
                         show_error(e.message);
                 }
