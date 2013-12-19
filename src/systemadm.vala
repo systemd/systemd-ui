@@ -669,7 +669,7 @@ public class MainWindow : Window {
                 try {
                         u.start("replace");
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
         }
 
@@ -682,7 +682,7 @@ public class MainWindow : Window {
                 try {
                         u.stop("replace");
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
         }
 
@@ -695,7 +695,7 @@ public class MainWindow : Window {
                 try {
                         u.reload("replace");
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
         }
 
@@ -708,7 +708,7 @@ public class MainWindow : Window {
                 try {
                         u.restart("replace");
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
         }
 
@@ -721,7 +721,7 @@ public class MainWindow : Window {
                 try {
                         j.cancel();
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
         }
 
@@ -749,7 +749,7 @@ public class MainWindow : Window {
                                        5, t != "" ? "→ %s".printf(t) : "",
                                        6, u);
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
         }
 
@@ -775,7 +775,7 @@ public class MainWindow : Window {
 
                         update_unit_iter(iter, id, u);
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
         }
 
@@ -811,7 +811,7 @@ public class MainWindow : Window {
                         update_job_iter(iter, id, j);
 
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
         }
 
@@ -893,7 +893,7 @@ public class MainWindow : Window {
                         } while (unit_model.iter_next(ref iter));
 
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
         }
 
@@ -929,7 +929,7 @@ public class MainWindow : Window {
                         } while (job_model.iter_next(ref iter));
 
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
         }
 
@@ -988,7 +988,7 @@ public class MainWindow : Window {
                 try {
                         manager.reload();
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
         }
 
@@ -999,7 +999,7 @@ public class MainWindow : Window {
                         if (unit_type_combo_box.get_active() != 0)
                                 unit_type_combo_box.set_active(12);
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
         }
 
@@ -1028,7 +1028,7 @@ public class MainWindow : Window {
 
                         show_unit(u);
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
         }
 
@@ -1048,22 +1048,107 @@ public class MainWindow : Window {
 
                         show_unit(u);
                 } catch (Error e) {
-                        show_error(e.message);
+                        show_error(e);
                 }
 
                 return true;
         }
 
-        public void show_error(string e) {
+        public void show_error(Error e) {
+				string title, message;
+				if (e is DBusError && DBusError.is_remote_error(e)) {
+						string remote = DBusError.get_remote_error(e);
+						title = "Remote DBus Error: %s".printf(remote);
+						message = strerror(dbus_error_to_errno(remote));
+				} else {
+						title = "Error";
+						message = "Error";
+				}
+
                 var m = new MessageDialog(this,
                                           DialogFlags.DESTROY_WITH_PARENT,
                                           MessageType.ERROR,
-                                          ButtonsType.CLOSE, "%s", e);
-                m.title = "Error";
+                                          ButtonsType.CLOSE, "%s", message);
+				m.title = title;
+				m.format_secondary_text("%s", e.message);
                 m.run();
                 m.destroy();
         }
+}
 
+int dbus_error_to_errno(string error) {
+		switch (error) {
+		case "org.freedesktop.DBus.Error.Failed":
+				return Posix.EACCES;
+		case "org.freedesktop.DBus.Error.NoMemory":
+				return Posix.ENOMEM;
+		case "org.freedesktop.DBus.Error.ServiceUnknown":
+				return Posix.EHOSTUNREACH;
+		case "org.freedesktop.DBus.Error.NameHasNoOwner":
+				return Posix.ENXIO;
+		case "org.freedesktop.DBus.Error.NoReply":
+				return Posix.ETIMEDOUT;
+		case "org.freedesktop.DBus.Error.IOError":
+				return Posix.EIO;
+		case "org.freedesktop.DBus.Error.BadAddress":
+				return Posix.EADDRNOTAVAIL;
+		case "org.freedesktop.DBus.Error.NotSupported":
+				return Posix.ENOTSUP;
+		case "org.freedesktop.DBus.Error.LimitsExceeded":
+				return Posix.ENOBUFS;
+		case "org.freedesktop.DBus.Error.AccessDenied":
+				return Posix.EACCES;
+		case "org.freedesktop.DBus.Error.AuthFailed":
+				return Posix.EACCES;
+		case "org.freedesktop.DBus.Error.NoServer":
+				/* Errno missing from Posix */
+				/* return Posix.EHOSTDOWN; */
+				return Posix.EIO;
+		case "org.freedesktop.DBus.Error.Timeout":
+				return Posix.ETIMEDOUT;
+		case "org.freedesktop.DBus.Error.NoNetwork":
+				/* Errno missing from Posix */
+				/* return Posix.ENONET; */
+				return Posix.EIO;
+		case "org.freedesktop.DBus.Error.AddressInUse":
+				return Posix.EADDRINUSE;
+		case "org.freedesktop.DBus.Error.Disconnected":
+				return Posix.ECONNRESET;
+		case "org.freedesktop.DBus.Error.InvalidArgs":
+				return Posix.EINVAL;
+		case "org.freedesktop.DBus.Error.FileNotFound":
+				return Posix.ENOENT;
+		case "org.freedesktop.DBus.Error.FileExists":
+				return Posix.EEXIST;
+		case "org.freedesktop.DBus.Error.UnknownMethod":
+		case "org.freedesktop.DBus.Error.UnknownObject":
+		case "org.freedesktop.DBus.Error.UnknownInterface":
+		case "org.freedesktop.DBus.Error.UnknownProperty":
+				/* Errno missing from Posix */
+				/* return Posix.EBADR; */
+				return Posix.EIO;
+		case "org.freedesktop.DBus.Error.PropertyReadOnly":
+				return Posix.EROFS;
+		case "org.freedesktop.DBus.Error.UnixProcessIdUnknown":
+				return Posix.ESRCH;
+		case "org.freedesktop.DBus.Error.InvalidSignature":
+				return Posix.EINVAL;
+		case "org.freedesktop.DBus.Error.InconsistentMessage":
+				return Posix.EBADMSG;
+		case "org.freedesktop.DBus.Error.TimedOut":
+				return Posix.ETIMEDOUT;
+		case "org.freedesktop.DBus.Error.MatchRuleInvalid":
+		case "org.freedesktop.DBus.Error.InvalidFileContent":
+				return Posix.EINVAL;
+		case "org.freedesktop.DBus.Error.MatchRuleNotFound":
+				return Posix.ENOENT;
+		case "org.freedesktop.DBus.Error.SELinuxSecurityContextUnknown":
+				return Posix.ESRCH;
+		case "org.freedesktop.DBus.Error.ObjectPathInUse":
+				return Posix.EBUSY;
+		default:
+				return Posix.EIO;
+		}
 }
 
 static const OptionEntry entries[] = {
@@ -1072,8 +1157,8 @@ static const OptionEntry entries[] = {
         { null }
 };
 
-void show_error(string e) {
-        var m = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE, "%s", e);
+void show_error(Error e) {
+        var m = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE, "%s", e.message);
         m.run();
         m.destroy();
 }
@@ -1088,7 +1173,7 @@ int main(string[] args) {
 
                 Gtk.main();
         } catch (IOError e) {
-                show_error(e.message);
+                show_error(e);
         } catch (GLib.Error e) {
                 stderr.printf("%s\n", e.message);
         }
