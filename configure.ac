@@ -17,7 +17,7 @@
 
 AC_PREREQ(2.63)
 
-AC_INIT([systemd-ui],[2],[systemd-devel@lists.freedesktop.org])
+AC_INIT([systemd-ui],[3],[systemd-devel@lists.freedesktop.org])
 AC_CONFIG_SRCDIR([src/systemadm.vala])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([config.h])

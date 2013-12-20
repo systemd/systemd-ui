@@ -117,8 +117,7 @@ uninstall-hook: $(UNINSTALL_EXEC_HOOKS)
 install-data-hook: $(INSTALL_DATA_HOOKS)
 
 upload: all distcheck
-	cp -v systemd-ui-$(VERSION).tar.xz /home/lennart/git.fedora/systemd-ui/
-	scp systemd-ui-$(VERSION).tar.xz fdo:/srv/www.freedesktop.org/www/software/systemd/
+	scp systemd-ui-$(VERSION).tar.xz www.freedesktop.org:/srv/www.freedesktop.org/www/software/systemd/
 
 git-tag:
 	git tag "v$(VERSION)" -m "systemd-ui $(VERSION)"
