@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Services
-Comment=Manage System Services
+Name=systemadm
+Comment=Manage Systemd Units
 Exec=systemadm
 Icon=applications-system
 Terminal=false
