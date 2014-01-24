@@ -60,6 +60,10 @@ desktopdir = $(datadir)/applications
 dist_desktop_DATA = \
 	src/systemadm.desktop
 
+appdatadir = $(datadir)/appdata
+dist_appdata_DATA = \
+	src/systemadm.appdata.xml
+
 CLEANFILES += \
 	${systemadm_SOURCES:.vala=.c}
 
