@@ -80,7 +80,7 @@ public class MyStatusIcon : StatusIcon {
         string socket;
 
         PasswordDialog password_dialog;
-        Notification n;
+        Notify.Notification n;
 
         public MyStatusIcon() throws GLib.Error {
                 GLib.Object(icon_name : "dialog-password");
@@ -183,7 +183,7 @@ public class MyStatusIcon : StatusIcon {
                 }
                 set_from_icon_name(icon);
 
-                n = new Notification(title, message, icon);
+                n = new Notify.Notification(title, message, icon);
                 n.set_timeout(5000);
                 n.closed.connect(() => {
                         set_visible(true);
