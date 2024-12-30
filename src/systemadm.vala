@@ -829,7 +829,7 @@ public class MainWindow : Window {
                                 if (current_unit_id == name)
                                         clear_unit();
 
-                                unit_model.remove(iter);
+                                unit_model.remove(ref iter);
                                 break;
                         }
 
@@ -852,7 +852,7 @@ public class MainWindow : Window {
                                 if (current_job_id == j)
                                         clear_job();
 
-                                job_model.remove(iter);
+                                job_model.remove(ref iter);
 
                                 break;
                         }
