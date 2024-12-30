@@ -247,7 +247,7 @@ public class MyStatusIcon : StatusIcon {
         }
 }
 
-static const OptionEntry entries[] = {
+const OptionEntry entries[] = {
         { null }
 };
 
