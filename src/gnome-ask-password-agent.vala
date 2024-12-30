@@ -156,8 +156,9 @@ public class MyStatusIcon : StatusIcon {
                         clock_gettime(1, out ts);
                         uint64 now = (ts.tv_sec * 1000000) + (ts.tv_nsec / 1000);
 
-                        uint64 not_after;
-                        if (not_after_as_string.scanf("%llu", out not_after) != 1)
+                        uint64 not_after = uint64.parse(not_after_as_string);;
+                        if ((not_after == 0 && GLib.errno == Posix.EINVAL) ||
+                            (not_after == int64.MAX && GLib.errno == Posix.ERANGE))
                                 return false;
 
                         if (not_after > 0 && not_after < now)
