@@ -19,7 +19,6 @@
 
 using Gtk;
 using GLib;
-using Linux;
 using Posix;
 using Notify;
 
@@ -36,8 +35,8 @@ public class PasswordDialog : Dialog {
                 set_default_response(ResponseType.OK);
                 set_icon_name(icon);
 
-                add_button(Stock.CANCEL, ResponseType.CANCEL);
-                add_button(Stock.OK, ResponseType.OK);
+                add_button("_Cancel", ResponseType.CANCEL);
+                add_button("_OK", ResponseType.OK);
 
                 Container content = (Container) get_content_area();
 
@@ -156,8 +155,9 @@ public class MyStatusIcon : StatusIcon {
                         clock_gettime(1, out ts);
                         uint64 now = (ts.tv_sec * 1000000) + (ts.tv_nsec / 1000);
 
-                        uint64 not_after;
-                        if (not_after_as_string.scanf("%llu", out not_after) != 1)
+                        uint64 not_after = uint64.parse(not_after_as_string);;
+                        if ((not_after == 0 && GLib.errno == Posix.EINVAL) ||
+                            (not_after == int64.MAX && GLib.errno == Posix.ERANGE))
                                 return false;
 
                         if (not_after > 0 && not_after < now)
@@ -236,22 +236,19 @@ public class MyStatusIcon : StatusIcon {
                         });
 
                         OutputStream stream = new UnixOutputStream(to_process, true);
-#if VALA_0_12
                         stream.write(password.data, null);
-#else
-                        stream.write(password, password.length, null);
-#endif
                 } catch (Error e) {
                         show_error(e.message);
                 }
         }
 }
 
-static const OptionEntry entries[] = {
+const OptionEntry entries[] = {
         { null }
 };
 
 void show_error(string e) {
+        Posix.stderr.printf("%s\n", e);
         var m = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE, "%s", e);
         m.run();
         m.destroy();

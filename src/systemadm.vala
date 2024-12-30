@@ -1151,7 +1151,7 @@ int dbus_error_to_errno(string error) {
 		}
 }
 
-static const OptionEntry entries[] = {
+const OptionEntry entries[] = {
         { "user",    0,   0,                   OptionArg.NONE, out user, "Connect to user service manager", null },
         { "system",  0,   OptionFlags.REVERSE, OptionArg.NONE, out user, "Connect to system manager",       null },
         { null }
