@@ -71,11 +71,14 @@ class Watch : GLib.Object {
         File directory;
         FileMonitor file_monitor;
 
+        private weak Application app;
+
         string title;
         string domain_display;
         string domain;
 
-        public Watch(string domain, string path) throws GLib.Error {
+        public Watch(Application gapp, string domain, string path) throws GLib.Error {
+                app = gapp;
 
                 directory = File.new_for_path(path);
                 file_monitor = directory.monitor_directory(0);
@@ -160,7 +163,14 @@ class Watch : GLib.Object {
                         icon = "dialog-password";
                 }
 
-                // TODO: send a notification
+                GLib.Notification n = new GLib.Notification(title);
+                n.set_category("password.request." + domain);
+                n.set_body(message);
+                n.set_priority(GLib.NotificationPriority.NORMAL);
+                n.set_icon(new ThemedIcon(icon));
+                n.add_button_with_target("Enter password", "app.password-request", "(ssss)", domain, message, icon, socket);
+
+                app.send_notification("password-request-%s".printf(socket), n);
 
                 return true;
         }
@@ -265,7 +275,7 @@ class Application : Gtk.Application {
 
         private Watch? add_watch(string domain, string path) {
                 try {
-                        return new Watch domain, path);
+                        return new Watch(this, domain, path);
                 } catch (IOError e) {
                         show_error("failed to set up %s watches on %s: %s".printf(domain, path, e.message));
                 } catch (GLib.Error e) {
