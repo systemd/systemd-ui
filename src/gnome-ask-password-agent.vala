@@ -236,11 +236,7 @@ public class MyStatusIcon : StatusIcon {
                         });
 
                         OutputStream stream = new UnixOutputStream(to_process, true);
-#if VALA_0_12
                         stream.write(password.data, null);
-#else
-                        stream.write(password, password.length, null);
-#endif
                 } catch (Error e) {
                         show_error(e.message);
                 }
