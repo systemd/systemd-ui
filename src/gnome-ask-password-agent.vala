@@ -28,8 +28,8 @@ public class PasswordDialog : Dialog {
 
         public Entry entry;
 
-        public PasswordDialog(string message, string icon) {
-                set_title("System Password");
+        public PasswordDialog(string domain, string message, string icon) {
+                set_title("%s Password".printf(domain));
                 set_border_width(8);
                 set_default_response(ResponseType.OK);
                 set_icon_name(icon);
@@ -176,56 +176,6 @@ class Watch : GLib.Object {
         }
 }
 
-#if 0
-        void status_icon_activate() {
-
-                if (current == null)
-                        return;
-
-                if (password_dialog != null) {
-                        password_dialog.present();
-                        return;
-                }
-
-                password_dialog = new PasswordDialog(message, icon);
-
-                int result = password_dialog.run();
-                string password = password_dialog.entry.get_text();
-
-                password_dialog.destroy();
-                password_dialog = null;
-
-                if (result == ResponseType.REJECT ||
-                    result == ResponseType.DELETE_EVENT ||
-                    result == ResponseType.CANCEL)
-                        return;
-
-                Pid child_pid;
-                int to_process;
-
-                try {
-                        Process.spawn_async_with_pipes(
-                                        null,
-                                        { "/usr/bin/pkexec", "/lib/systemd/systemd-reply-password", result == ResponseType.OK ? "1" : "0", socket },
-                                        null,
-                                        SpawnFlags.DO_NOT_REAP_CHILD,
-                                        null,
-                                        out child_pid,
-                                        out to_process,
-                                        null,
-                                        null);
-                        ChildWatch.add(child_pid, (pid, status) => {
-                                Process.close_pid(pid);
-                        });
-
-                        OutputStream stream = new UnixOutputStream(to_process, true);
-                        stream.write(password.data, null);
-                } catch (Error e) {
-                        show_error(e.message);
-                }
-        }
-#endif
-
 void show_error(string e) {
         Posix.stderr.printf("%s\n", e);
         var m = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE, "%s", e);
@@ -246,10 +196,15 @@ class Application : Gtk.Application {
                 { null }
         };
 
+        private const GLib.ActionEntry actions[] = {
+                { "password-request", password_request, "(ssss)" },
+        };
+
         public Application() {
                 Object(application_id: "org.freedesktop.systemd.gnome-ask-password-agent",
                        flags: GLib.ApplicationFlags.IS_SERVICE);
                 add_main_option_entries(entries);
+                add_action_entries(actions, this);
         }
 
         protected override void startup() {
@@ -283,6 +238,58 @@ class Application : Gtk.Application {
                 }
 
                 return null;
+        }
+
+        private static void password_request(GLib.SimpleAction action, GLib.Variant? variant) {
+                if (variant.n_children() != 4) {
+                        return;
+                }
+
+                string domain = variant.get_child_value(0).get_string();
+                string message = variant.get_child_value(1).get_string();
+                string icon = variant.get_child_value(2).get_string();
+                string socket = variant.get_child_value(3).get_string();
+
+                if (domain.length == 0 || message.length == 0 || icon.length == 0 || socket.length == 0) {
+                        show_error("invalid password request (domain: '%s', message: '%s', icon: '%s', socket: '%s')".printf(domain, message, icon, socket));
+                        return;
+                }
+
+                PasswordDialog password_dialog = new PasswordDialog(domain, message, icon);
+
+                int result = password_dialog.run();
+                string password = password_dialog.entry.get_text();
+                password_dialog.destroy();
+
+                if (result == ResponseType.REJECT ||
+                    result == ResponseType.DELETE_EVENT ||
+                    result == ResponseType.CANCEL) {
+                        return;
+                }
+
+                Pid child_pid;
+                int to_process;
+
+                try {
+                        Process.spawn_async_with_pipes(
+                                        null,
+                                        { "/usr/bin/pkexec", "/lib/systemd/systemd-reply-password", result == ResponseType.OK ? "1" : "0", socket },
+                                        null,
+                                        SpawnFlags.DO_NOT_REAP_CHILD,
+                                        null,
+                                        out child_pid,
+                                        out to_process,
+                                        null,
+                                        null);
+                        ChildWatch.add(child_pid, (pid, status) => {
+                                Process.close_pid(pid);
+                        });
+
+                        OutputStream stream = new UnixOutputStream(to_process, true);
+                        stream.write(password.data, null);
+                } catch (Error e) {
+                        show_error(e.message);
+                }
         }
 
         public static int main(string[] args) {
