@@ -70,9 +70,13 @@ public class PasswordDialog : Dialog {
 
 public class MyStatusIcon : StatusIcon {
 
-        File directory;
         File current;
+
+        File directory;
         FileMonitor file_monitor;
+
+        File? user_directory;
+        FileMonitor? user_file_monitor;
 
         string message;
         string icon;
@@ -88,6 +92,17 @@ public class MyStatusIcon : StatusIcon {
                 directory = File.new_for_path("/run/systemd/ask-password/");
                 file_monitor = directory.monitor_directory(0);
                 file_monitor.changed.connect(file_monitor_changed);
+
+                string? xdg_runtime_dir = Environment.get_variable("XDG_RUNTIME_DIR");
+                if (xdg_runtime_dir != null) {
+                        user_directory = File.new_for_path((!) xdg_runtime_dir + "/systemd/ask-password/");
+                        if (user_directory.query_exists()) {
+                                user_file_monitor = user_directory.monitor_directory(0);
+                                user_file_monitor.changed.connect(file_monitor_changed);
+                        } else {
+                                user_directory = null;
+                        }
+                }
 
                 current = null;
                 look_for_password();
@@ -120,25 +135,33 @@ public class MyStatusIcon : StatusIcon {
                         }
                 }
 
+                if (current == null && user_directory != null) {
+                        look_in_directory((!) user_directory);
+                }
+
                 if (current == null) {
-                        FileEnumerator enumerator = directory.enumerate_children("standard::name", FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
-
-                        FileInfo i;
-                        while ((i = enumerator.next_file()) != null) {
-                                if (!i.get_name().has_prefix("ask."))
-                                        continue;
-
-                                current = directory.get_child(i.get_name());
-
-                                if (load_password())
-                                        break;
-
-                                current = null;
-                        }
+                        look_in_directory(directory);
                 }
 
                 if (current == null)
                         set_visible(false);
+        }
+
+        void look_in_directory(File dir) throws GLib.Error {
+                FileEnumerator enumerator = dir.enumerate_children("standard::name", FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
+
+                FileInfo i;
+                while ((i = enumerator.next_file()) != null) {
+                        if (!i.get_name().has_prefix("ask."))
+                                continue;
+
+                        current = dir.get_child(i.get_name());
+
+                        if (load_password())
+                                break;
+
+                        current = null;
+                }
         }
 
         bool load_password() throws GLib.Error {
