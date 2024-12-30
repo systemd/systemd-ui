@@ -248,6 +248,7 @@ const OptionEntry entries[] = {
 };
 
 void show_error(string e) {
+        Posix.stderr.printf("%s\n", e);
         var m = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE, "%s", e);
         m.run();
         m.destroy();
