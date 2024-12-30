@@ -224,14 +224,33 @@ void show_error(string e) {
 }
 
 class Application : Gtk.Application {
+        private static bool system = false;
+
+        private Watch? system_watch = null;
+
+        private const OptionEntry entries[] = {
+                { "system", 's', OptionFlags.NONE, OptionArg.NONE, ref system, "Watch for system requests", null },
+                { null }
+        };
+
         public Application() {
                 Object(application_id: "org.freedesktop.systemd.gnome-ask-password-agent",
                        flags: GLib.ApplicationFlags.IS_SERVICE);
+                add_main_option_entries(entries);
         }
 
         protected override void startup() {
-                // TODO: watch the system.
+                if (system) {
+                        system_watch = add_watch("system", "/run/systemd/ask-password/");
+                }
+
                 // TODO: watch the user.
+
+                if (system_watch != null) {
+                        hold();
+                } else {
+                        show_error("no watches requested");
+                }
         }
 
         private Watch? add_watch(string domain, string path) {
