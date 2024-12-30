@@ -106,8 +106,9 @@ class Watch : GLib.Object {
         }
 
         void file_monitor_changed(GLib.File file, GLib.File? other_file, GLib.FileMonitorEvent event_type) {
-                if (!file.get_basename().has_prefix("ask."))
+                if (!file.get_basename().has_prefix("ask.")) {
                         return;
+                }
 
                 if (event_type == FileMonitorEvent.CREATED ||
                     event_type == FileMonitorEvent.DELETED) {
@@ -138,14 +139,17 @@ class Watch : GLib.Object {
 
                         uint64 not_after = uint64.parse(not_after_as_string);;
                         if ((not_after == 0 && GLib.errno == Posix.EINVAL) ||
-                            (not_after == int64.MAX && GLib.errno == Posix.ERANGE))
+                            (not_after == int64.MAX && GLib.errno == Posix.ERANGE)) {
                                 return false;
+                        }
 
-                        if (not_after > 0 && not_after < now)
+                        if (not_after > 0 && not_after < now) {
                                 return false;
+                        }
 
-                        if (not_after > 0)
+                        if (not_after > 0) {
                                 timeout = (int)(not_after - now) / 1000;
+                        }
 
                         socket = key_file.get_string("Ask", "Socket");
                 } catch (GLib.Error e) {
