@@ -225,11 +225,14 @@ void show_error(string e) {
 
 class Application : Gtk.Application {
         private static bool system = false;
+        private static bool user = false;
 
         private Watch? system_watch = null;
+        private Watch? user_watch = null;
 
         private const OptionEntry entries[] = {
                 { "system", 's', OptionFlags.NONE, OptionArg.NONE, ref system, "Watch for system requests", null },
+                { "user", 'u', OptionFlags.NONE, OptionArg.NONE, ref user, "Watch for system requests", null },
                 { null }
         };
 
@@ -244,9 +247,16 @@ class Application : Gtk.Application {
                         system_watch = add_watch("system", "/run/systemd/ask-password/");
                 }
 
-                // TODO: watch the user.
+                if (user) {
+                        string? xdg_runtime_dir = Environment.get_variable("XDG_RUNTIME_DIR");
+                        if (xdg_runtime_dir == null) {
+                                show_error("no user XDG runtime directory");
+                        } else {
+                                add_watch("user", (!) xdg_runtime_dir + "/systemd/ask-password/");
+                        }
+                }
 
-                if (system_watch != null) {
+                if (system_watch != null || user_watch != null) {
                         hold();
                 } else {
                         show_error("no watches requested");
