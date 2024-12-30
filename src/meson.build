@@ -8,7 +8,7 @@ install_data('systemadm.appdata.xml', install_dir: appdatadir)
 
 sgapa_files = files('gnome-ask-password-agent.vala')
 sgapa = executable('systemd-gnome-ask-password-agent', sgapa_files,
-                   dependencies: [common_flags, gtk3, gee, gio_unix, libnotify, posix],
+                   dependencies: [common_flags, gtk3, gee, gio_unix, posix],
                    install: true)
 install_data('org.freedesktop.systemd.gnome-ask-password-agent.desktop', install_dir: applicationsdir)
 install_data('systemd-gnome-ask-password-agent.rules', install_dir: polkitrulesdir)

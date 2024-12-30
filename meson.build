@@ -143,7 +143,6 @@ glib = dependency('glib-2.0', version: '> 2.26')
 gio_unix = dependency('gio-unix-2.0')
 gee = dependency('gee-0.8')
 gtk3 = dependency('gtk+-3.0')
-libnotify = dependency('libnotify')
 posix = meson.get_compiler('vala').find_library('posix')
 
 #####################################################################

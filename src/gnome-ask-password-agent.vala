@@ -20,7 +20,6 @@
 using Gtk;
 using GLib;
 using Posix;
-using Notify;
 
 [CCode (cheader_filename = "time.h")]
 extern int clock_gettime(int id, out timespec ts);
@@ -68,83 +67,25 @@ public class PasswordDialog : Dialog {
         }
 }
 
-public class MyStatusIcon : StatusIcon {
-
-        File current;
-
+class Watch : GLib.Object {
         File directory;
         FileMonitor file_monitor;
 
-        File? user_directory;
-        FileMonitor? user_file_monitor;
+        string title;
+        string domain_display;
+        string domain;
 
-        string message;
-        string icon;
-        string socket;
+        public Watch(string domain, string path) throws GLib.Error {
 
-        PasswordDialog password_dialog;
-        Notify.Notification n;
-
-        public MyStatusIcon() throws GLib.Error {
-                GLib.Object(icon_name : "dialog-password");
-                set_title("System Password Request");
-
-                directory = File.new_for_path("/run/systemd/ask-password/");
+                directory = File.new_for_path(path);
                 file_monitor = directory.monitor_directory(0);
                 file_monitor.changed.connect(file_monitor_changed);
 
-                string? xdg_runtime_dir = Environment.get_variable("XDG_RUNTIME_DIR");
-                if (xdg_runtime_dir != null) {
-                        user_directory = File.new_for_path((!) xdg_runtime_dir + "/systemd/ask-password/");
-                        if (user_directory.query_exists()) {
-                                user_file_monitor = user_directory.monitor_directory(0);
-                                user_file_monitor.changed.connect(file_monitor_changed);
-                        } else {
-                                user_directory = null;
-                        }
-                }
+                domain_display = "%s%s".printf(domain.ascii_up(1), domain.substring(1));
+                title = "Password Request (%s)".printf(domain_display);
+                this.domain = domain;
 
-                current = null;
-                look_for_password();
-
-                activate.connect(status_icon_activate);
-        }
-
-        void file_monitor_changed(GLib.File file, GLib.File? other_file, GLib.FileMonitorEvent event_type) {
-
-                if (!file.get_basename().has_prefix("ask."))
-                        return;
-
-                if (event_type == FileMonitorEvent.CREATED ||
-                    event_type == FileMonitorEvent.DELETED) {
-                        try {
-                                look_for_password();
-                        } catch (Error e) {
-                                show_error(e.message);
-                        }
-                }
-        }
-
-        void look_for_password() throws GLib.Error {
-
-                if (current != null) {
-                        if (!current.query_exists()) {
-                                current = null;
-                                if (password_dialog != null)
-                                        password_dialog.response(ResponseType.REJECT);
-                        }
-                }
-
-                if (current == null && user_directory != null) {
-                        look_in_directory((!) user_directory);
-                }
-
-                if (current == null) {
-                        look_in_directory(directory);
-                }
-
-                if (current == null)
-                        set_visible(false);
+                look_in_directory(directory);
         }
 
         void look_in_directory(File dir) throws GLib.Error {
@@ -152,27 +93,39 @@ public class MyStatusIcon : StatusIcon {
 
                 FileInfo i;
                 while ((i = enumerator.next_file()) != null) {
-                        if (!i.get_name().has_prefix("ask."))
+                        if (!i.get_name().has_prefix("ask.")) {
                                 continue;
+                        }
 
-                        current = dir.get_child(i.get_name());
-
-                        if (load_password())
-                                break;
-
-                        current = null;
+                        load_password(dir.get_child(i.get_name()));
                 }
         }
 
-        bool load_password() throws GLib.Error {
+        void file_monitor_changed(GLib.File file, GLib.File? other_file, GLib.FileMonitorEvent event_type) {
+                if (!file.get_basename().has_prefix("ask."))
+                        return;
 
+                if (event_type == FileMonitorEvent.CREATED ||
+                    event_type == FileMonitorEvent.DELETED) {
+                        try {
+                                load_password(file);
+                        } catch (Error e) {
+                                show_error(e.message);
+                        }
+                }
+        }
+
+        bool load_password(File file) throws GLib.Error {
                 KeyFile key_file = new KeyFile();
                 int timeout = 5000;
+                string socket;
+                string message;
+                string icon;
 
                 try {
                         timespec ts;
 
-                        key_file.load_from_file(current.get_path(), KeyFileFlags.NONE);
+                        key_file.load_from_file(file.get_path(), KeyFileFlags.NONE);
 
                         string not_after_as_string = key_file.get_string("Ask", "NotAfter");
 
@@ -198,29 +151,22 @@ public class MyStatusIcon : StatusIcon {
                 try {
                         message = key_file.get_string("Ask", "Message").compress();
                 } catch (GLib.Error e) {
-                        message = "Please Enter System Password!";
+                        message = "Please Enter %s Password!".printf(domain_display);
                 }
-
-                set_tooltip_text(message);
 
                 try {
                         icon = key_file.get_string("Ask", "Icon");
                 } catch (GLib.Error e) {
                         icon = "dialog-password";
                 }
-                set_from_icon_name(icon);
 
-                n = new Notify.Notification(title, message, icon);
-                n.set_timeout(timeout);
-                n.closed.connect(() => {
-                        set_visible(true);
-                });
-                n.add_action("enter_pw", "Enter password", status_icon_activate);
-                n.show();
+                // TODO: send a notification
 
                 return true;
         }
+}
 
+#if 0
         void status_icon_activate() {
 
                 if (current == null)
@@ -268,7 +214,7 @@ public class MyStatusIcon : StatusIcon {
                         show_error(e.message);
                 }
         }
-}
+#endif
 
 void show_error(string e) {
         Posix.stderr.printf("%s\n", e);
@@ -289,7 +235,14 @@ class Application : Gtk.Application {
         }
 
         private Watch? add_watch(string domain, string path) {
-                // TODO: implement
+                try {
+                        return new Watch domain, path);
+                } catch (IOError e) {
+                        show_error("failed to set up %s watches on %s: %s".printf(domain, path, e.message));
+                } catch (GLib.Error e) {
+                        show_error("failed to set up %s watches on %s: %s".printf(domain, path, e.message));
+                }
+
                 return null;
         }
 
