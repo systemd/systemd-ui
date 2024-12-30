@@ -89,8 +89,8 @@ public class MainWindow : Window {
         private TreeView unit_view;
         private TreeView job_view;
 
-        private ListStore unit_model;
-        private ListStore job_model;
+        private Gtk.ListStore unit_model;
+        private Gtk.ListStore job_model;
 
         private Gee.HashMap<string, Unit> unit_map;
 
@@ -128,7 +128,7 @@ public class MainWindow : Window {
         private ComboBoxText unit_type_combo_box;
         private CheckButton inactive_checkbox;
 
-        public MainWindow() throws IOError {
+        public MainWindow() throws DBusError, IOError {
                 title = user ? "systemd User Service Manager" : "systemd System Manager";
                 set_position(WindowPosition.CENTER);
                 set_default_size(1000, 700);
@@ -193,8 +193,8 @@ public class MainWindow : Window {
                 type_hbox.pack_end(server_reload_button, false, true, 0);
                 type_hbox.pack_end(unit_load_hbox, false, true, 24);
 
-                unit_model = new ListStore(7, typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(Unit));
-                job_model = new ListStore(6, typeof(string), typeof(string), typeof(string), typeof(string), typeof(Job), typeof(uint32));
+                unit_model = new Gtk.ListStore(7, typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(Unit));
+                job_model = new Gtk.ListStore(6, typeof(string), typeof(string), typeof(string), typeof(string), typeof(Job), typeof(uint32));
 
                 unit_map = new Gee.HashMap<string, Unit>();
 
@@ -354,7 +354,7 @@ public class MainWindow : Window {
                 populate_job_model();
         }
 
-        public void populate_unit_model() throws IOError {
+        public void populate_unit_model() throws DBusError, IOError {
                 unit_model.clear();
 
                 var list = manager.list_units();
@@ -388,7 +388,7 @@ public class MainWindow : Window {
                 }
         }
 
-        public void populate_job_model() throws IOError {
+        public void populate_job_model() throws DBusError, IOError {
                 job_model.clear();
 
                 var list = manager.list_jobs();
@@ -498,7 +498,7 @@ public class MainWindow : Window {
 
 
         public string make_dependency_string(string? prefix, string word, string[] dependencies) {
-                Gee.Collection<unowned string> sorted = new Gee.TreeSet<string>();
+                Gee.Collection<unowned string> sorted = new Gee.TreeSet<unowned string>();
                 foreach (string i in dependencies)
                         sorted.add(i);
 
@@ -829,7 +829,7 @@ public class MainWindow : Window {
                                 if (current_unit_id == name)
                                         clear_unit();
 
-                                unit_model.remove(iter);
+                                unit_model.remove(ref iter);
                                 break;
                         }
 
@@ -852,7 +852,7 @@ public class MainWindow : Window {
                                 if (current_job_id == j)
                                         clear_job();
 
-                                job_model.remove(iter);
+                                job_model.remove(ref iter);
 
                                 break;
                         }

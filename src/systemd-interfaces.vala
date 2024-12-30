@@ -44,43 +44,43 @@ public interface Manager : DBusProxy {
 
         public abstract string[] environment { owned get; }
 
-        public abstract UnitInfo[] list_units() throws IOError;
-        public abstract JobInfo[] list_jobs() throws IOError;
+        public abstract UnitInfo[] list_units() throws DBusError, IOError;
+        public abstract JobInfo[] list_jobs() throws DBusError, IOError;
 
-        public abstract ObjectPath get_unit(string name) throws IOError;
-        public abstract ObjectPath get_unit_by_pid(uint32 pid) throws IOError;
-        public abstract ObjectPath load_unit(string name) throws IOError;
-        public abstract ObjectPath get_job(uint32 id) throws IOError;
+        public abstract ObjectPath get_unit(string name) throws DBusError, IOError;
+        public abstract ObjectPath get_unit_by_pid(uint32 pid) throws DBusError, IOError;
+        public abstract ObjectPath load_unit(string name) throws DBusError, IOError;
+        public abstract ObjectPath get_job(uint32 id) throws DBusError, IOError;
 
-        public abstract ObjectPath start_unit(string name, string mode = "replace") throws IOError;
-        public abstract ObjectPath stop_unit(string name, string mode = "replace") throws IOError;
-        public abstract ObjectPath reload_unit(string name, string mode = "replace") throws IOError;
-        public abstract ObjectPath restart_unit(string name, string mode = "replace") throws IOError;
-        public abstract ObjectPath try_restart_unit(string name, string mode = "replace") throws IOError;
-        public abstract ObjectPath reload_or_restart_unit(string name, string mode = "replace") throws IOError;
-        public abstract ObjectPath reload_or_try_restart_unit(string name, string mode = "replace") throws IOError;
+        public abstract ObjectPath start_unit(string name, string mode = "replace") throws DBusError, IOError;
+        public abstract ObjectPath stop_unit(string name, string mode = "replace") throws DBusError, IOError;
+        public abstract ObjectPath reload_unit(string name, string mode = "replace") throws DBusError, IOError;
+        public abstract ObjectPath restart_unit(string name, string mode = "replace") throws DBusError, IOError;
+        public abstract ObjectPath try_restart_unit(string name, string mode = "replace") throws DBusError, IOError;
+        public abstract ObjectPath reload_or_restart_unit(string name, string mode = "replace") throws DBusError, IOError;
+        public abstract ObjectPath reload_or_try_restart_unit(string name, string mode = "replace") throws DBusError, IOError;
 
-        public abstract void reset_failed_unit(string name = "") throws IOError;
+        public abstract void reset_failed_unit(string name = "") throws DBusError, IOError;
 
-        public abstract void clear_jobs() throws IOError;
+        public abstract void clear_jobs() throws DBusError, IOError;
 
-        public abstract void subscribe() throws IOError;
-        public abstract void unsubscribe() throws IOError;
+        public abstract void subscribe() throws DBusError, IOError;
+        public abstract void unsubscribe() throws DBusError, IOError;
 
-        public abstract string dump() throws IOError;
+        public abstract string dump() throws DBusError, IOError;
 
-        public abstract void reload() throws IOError;
-        public abstract void reexecute() throws IOError;
-        public abstract void exit() throws IOError;
-        public abstract void halt() throws IOError;
-        public abstract void power_off() throws IOError;
-        public abstract void reboot() throws IOError;
-        public abstract void kexec() throws IOError;
+        public abstract void reload() throws DBusError, IOError;
+        public abstract void reexecute() throws DBusError, IOError;
+        public abstract void exit() throws DBusError, IOError;
+        public abstract void halt() throws DBusError, IOError;
+        public abstract void power_off() throws DBusError, IOError;
+        public abstract void reboot() throws DBusError, IOError;
+        public abstract void kexec() throws DBusError, IOError;
 
-        public abstract ObjectPath create_snapshot(string name = "", bool cleanup = false) throws IOError;
+        public abstract ObjectPath create_snapshot(string name = "", bool cleanup = false) throws DBusError, IOError;
 
-        public abstract void set_environment(string[] names) throws IOError;
-        public abstract void unset_environment(string[] names) throws IOError;
+        public abstract void set_environment(string[] names) throws DBusError, IOError;
+        public abstract void unset_environment(string[] names) throws DBusError, IOError;
 
         public abstract signal void unit_new(string id, ObjectPath path);
         public abstract signal void unit_removed(string id, ObjectPath path);
@@ -134,15 +134,15 @@ public interface Unit : DBusProxy {
         public abstract bool need_daemon_reload { owned get; }
         public abstract uint64 job_timeout_usec { owned get; }
 
-        public abstract ObjectPath start(string mode = "replace") throws IOError;
-        public abstract ObjectPath stop(string mode = "replace") throws IOError;
-        public abstract ObjectPath reload(string mode = "replace") throws IOError;
-        public abstract ObjectPath restart(string mode = "replace") throws IOError;
-        public abstract ObjectPath try_restart(string mode = "replace") throws IOError;
-        public abstract ObjectPath reload_or_restart(string mode = "replace") throws IOError;
-        public abstract ObjectPath reload_or_try_restart(string mode = "replace") throws IOError;
+        public abstract ObjectPath start(string mode = "replace") throws DBusError, IOError;
+        public abstract ObjectPath stop(string mode = "replace") throws DBusError, IOError;
+        public abstract ObjectPath reload(string mode = "replace") throws DBusError, IOError;
+        public abstract ObjectPath restart(string mode = "replace") throws DBusError, IOError;
+        public abstract ObjectPath try_restart(string mode = "replace") throws DBusError, IOError;
+        public abstract ObjectPath reload_or_restart(string mode = "replace") throws DBusError, IOError;
+        public abstract ObjectPath reload_or_try_restart(string mode = "replace") throws DBusError, IOError;
 
-        public abstract void reset_failed() throws IOError;
+        public abstract void reset_failed() throws DBusError, IOError;
 }
 
 [DBus (name = "org.freedesktop.systemd1.Job")]
@@ -157,11 +157,11 @@ public interface Job : DBusProxy {
         public abstract string job_type { owned get; }
         public abstract UnitLink unit { owned get; }
 
-        public abstract void cancel() throws IOError;
+        public abstract void cancel() throws DBusError, IOError;
 }
 
 [DBus (name = "org.freedesktop.Properties")]
 public interface Properties : DBusProxy {
-        public abstract Variant? get(string iface, string property) throws IOError;
+        public abstract Variant? get(string iface, string property) throws DBusError, IOError;
         public abstract signal void properties_changed(string iface, HashTable<string, Variant?> changed_properties, string[] invalidated_properties);
 }
