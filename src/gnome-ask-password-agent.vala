@@ -270,10 +270,6 @@ public class MyStatusIcon : StatusIcon {
         }
 }
 
-const OptionEntry entries[] = {
-        { null }
-};
-
 void show_error(string e) {
         Posix.stderr.printf("%s\n", e);
         var m = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE, "%s", e);
@@ -281,18 +277,30 @@ void show_error(string e) {
         m.destroy();
 }
 
-int main(string[] args) {
-        try {
-                Gtk.init_with_args(ref args, "[OPTION...]", entries, "systemd-ask-password-agent");
-                Notify.init("Password Agent");
-
-                MyStatusIcon i = new MyStatusIcon();
-                Gtk.main();
-        } catch (IOError e) {
-                show_error(e.message);
-        } catch (GLib.Error e) {
-                Posix.stderr.printf("%s\n", e.message);
+class Application : Gtk.Application {
+        public Application() {
+                Object(application_id: "org.freedesktop.systemd.gnome-ask-password-agent",
+                       flags: GLib.ApplicationFlags.IS_SERVICE);
         }
 
-        return 0;
+        protected override void startup() {
+                // TODO: watch the system.
+                // TODO: watch the user.
+        }
+
+        private Watch? add_watch(string domain, string path) {
+                // TODO: implement
+                return null;
+        }
+
+        public static int main(string[] args) {
+                try {
+                        Gtk.init_with_args(ref args, "[OPTION...]", entries, "systemd-ask-password-agent");
+                } catch (GLib.Error e) {
+                        Posix.stderr.printf("%s\n", e.message);
+                        return 1;
+                }
+                Application app = new Application();
+                return app.run(args);
+        }
 }
