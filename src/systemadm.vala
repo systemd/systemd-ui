@@ -89,8 +89,8 @@ public class MainWindow : Window {
         private TreeView unit_view;
         private TreeView job_view;
 
-        private ListStore unit_model;
-        private ListStore job_model;
+        private Gtk.ListStore unit_model;
+        private Gtk.ListStore job_model;
 
         private Gee.HashMap<string, Unit> unit_map;
 
@@ -193,8 +193,8 @@ public class MainWindow : Window {
                 type_hbox.pack_end(server_reload_button, false, true, 0);
                 type_hbox.pack_end(unit_load_hbox, false, true, 24);
 
-                unit_model = new ListStore(7, typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(Unit));
-                job_model = new ListStore(6, typeof(string), typeof(string), typeof(string), typeof(string), typeof(Job), typeof(uint32));
+                unit_model = new Gtk.ListStore(7, typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(Unit));
+                job_model = new Gtk.ListStore(6, typeof(string), typeof(string), typeof(string), typeof(string), typeof(Job), typeof(uint32));
 
                 unit_map = new Gee.HashMap<string, Unit>();
 
