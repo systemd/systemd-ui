@@ -19,7 +19,6 @@
 
 using Gtk;
 using GLib;
-using Linux;
 using Posix;
 using Notify;
 
