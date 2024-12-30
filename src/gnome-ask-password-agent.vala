@@ -36,8 +36,8 @@ public class PasswordDialog : Dialog {
                 set_default_response(ResponseType.OK);
                 set_icon_name(icon);
 
-                add_button(Stock.CANCEL, ResponseType.CANCEL);
-                add_button(Stock.OK, ResponseType.OK);
+                add_button("_Cancel", ResponseType.CANCEL);
+                add_button("_OK", ResponseType.OK);
 
                 Container content = (Container) get_content_area();
 
