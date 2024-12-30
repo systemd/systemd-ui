@@ -167,6 +167,7 @@ public class MyStatusIcon : StatusIcon {
         bool load_password() throws GLib.Error {
 
                 KeyFile key_file = new KeyFile();
+                int timeout = 5000;
 
                 try {
                         timespec ts;
@@ -185,6 +186,9 @@ public class MyStatusIcon : StatusIcon {
 
                         if (not_after > 0 && not_after < now)
                                 return false;
+
+                        if (not_after > 0)
+                                timeout = (int)(not_after - now) / 1000;
 
                         socket = key_file.get_string("Ask", "Socket");
                 } catch (GLib.Error e) {
@@ -207,7 +211,7 @@ public class MyStatusIcon : StatusIcon {
                 set_from_icon_name(icon);
 
                 n = new Notify.Notification(title, message, icon);
-                n.set_timeout(5000);
+                n.set_timeout(timeout);
                 n.closed.connect(() => {
                         set_visible(true);
                 });
