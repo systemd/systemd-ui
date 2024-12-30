@@ -17,6 +17,7 @@
   along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
+using Gee;
 using Gtk;
 using GLib;
 using Posix;
@@ -170,7 +171,13 @@ class Watch : GLib.Object {
                 n.set_icon(new ThemedIcon(icon));
                 n.add_button_with_target("Enter password", "app.password-request", "(ssss)", domain, message, icon, socket);
 
-                app.send_notification("password-request-%s".printf(socket), n);
+                string n_id = "password-request-%s".printf(socket);
+                app.send_notification(n_id, n);
+                uint s = GLib.Timeout.add_once(timeout, () => {
+                        app.withdraw_notification(n_id);
+                        app.timeouts.unset(socket);
+                });
+                app.timeouts[socket] = s;
 
                 return true;
         }
@@ -190,6 +197,8 @@ class Application : Gtk.Application {
         private Watch? system_watch = null;
         private Watch? user_watch = null;
 
+        public Gee.HashMap<string, uint> timeouts;
+
         private const OptionEntry entries[] = {
                 { "system", 's', OptionFlags.NONE, OptionArg.NONE, ref system, "Watch for system requests", null },
                 { "user", 'u', OptionFlags.NONE, OptionArg.NONE, ref user, "Watch for system requests", null },
@@ -205,6 +214,9 @@ class Application : Gtk.Application {
                        flags: GLib.ApplicationFlags.IS_SERVICE);
                 add_main_option_entries(entries);
                 add_action_entries(actions, this);
+                set_default(this);
+
+                timeouts = new Gee.HashMap<string, uint>();
         }
 
         protected override void startup() {
@@ -241,6 +253,12 @@ class Application : Gtk.Application {
         }
 
         private static void password_request(GLib.SimpleAction action, GLib.Variant? variant) {
+                var gapp = GLib.Application.get_default();
+                if (gapp == null) {
+                        return;
+                }
+                var app = (Application) (!) gapp;
+
                 if (variant.n_children() != 4) {
                         return;
                 }
@@ -260,6 +278,11 @@ class Application : Gtk.Application {
                 int result = password_dialog.run();
                 string password = password_dialog.entry.get_text();
                 password_dialog.destroy();
+
+                uint n_id;
+                if (app.timeouts.unset(socket, out n_id)) {
+                        GLib.Source.remove(n_id);
+                }
 
                 if (result == ResponseType.REJECT ||
                     result == ResponseType.DELETE_EVENT ||
