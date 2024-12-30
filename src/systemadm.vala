@@ -128,7 +128,7 @@ public class MainWindow : Window {
         private ComboBoxText unit_type_combo_box;
         private CheckButton inactive_checkbox;
 
-        public MainWindow() throws IOError {
+        public MainWindow() throws DBusError, IOError {
                 title = user ? "systemd User Service Manager" : "systemd System Manager";
                 set_position(WindowPosition.CENTER);
                 set_default_size(1000, 700);
@@ -354,7 +354,7 @@ public class MainWindow : Window {
                 populate_job_model();
         }
 
-        public void populate_unit_model() throws IOError {
+        public void populate_unit_model() throws DBusError, IOError {
                 unit_model.clear();
 
                 var list = manager.list_units();
@@ -388,7 +388,7 @@ public class MainWindow : Window {
                 }
         }
 
-        public void populate_job_model() throws IOError {
+        public void populate_job_model() throws DBusError, IOError {
                 job_model.clear();
 
                 var list = manager.list_jobs();
@@ -498,7 +498,7 @@ public class MainWindow : Window {
 
 
         public string make_dependency_string(string? prefix, string word, string[] dependencies) {
-                Gee.Collection<unowned string> sorted = new Gee.TreeSet<string>();
+                Gee.Collection<unowned string> sorted = new Gee.TreeSet<unowned string>();
                 foreach (string i in dependencies)
                         sorted.add(i);
 
