@@ -136,8 +136,6 @@ add_project_link_arguments(
 userspace_c_args += cc.get_supported_arguments(possible_cc_flags)
 userspace_c_ld_args += cc.get_supported_link_arguments(possible_link_flags)
 
-cpp = ' '.join(cc.cmd_array() + get_option('c_args')) + ' -E'
-
 #####################################################################
 # compilation result tests
 
