@@ -82,8 +82,6 @@ possible_common_link_flags = [
         '-fstack-protector',
 ]
 
-c_args = get_option('c_args')
-
 # --as-needed and --no-undefined are provided by meson by default,
 # run 'meson configure' to see what is enabled
 possible_link_flags = [
