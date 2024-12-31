@@ -26,9 +26,6 @@ if not prefixdir.startswith('/')
         error('Prefix is not absolute: "@0@"'.format(prefixdir))
 endif
 
-prefixdir_noslash = '/' + prefixdir.strip('/')
-bindir = prefixdir / get_option('bindir')
-libdir = prefixdir / get_option('libdir')
 datadir = prefixdir / get_option('datadir')
 applicationsdir = datadir / 'applications'
 appdatadir = datadir / 'appdata'
