@@ -188,10 +188,3 @@ endif
 install_data('LICENSE',
              'CODING_STYLE',
              install_dir : docdir)
-
-#####################################################################
-
-summary({
-        'prefix directory' :                prefixdir,
-        'lib directory' :                   libdir,
-        })
