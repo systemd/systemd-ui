@@ -148,7 +148,7 @@ posix = meson.get_compiler('vala').find_library('posix')
 
 #####################################################################
 
-userspace = declare_dependency(
+common_flags = declare_dependency(
         compile_args : userspace_c_args,
         link_args : userspace_c_ld_args,
 )
