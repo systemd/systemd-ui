@@ -19,7 +19,7 @@ else
 endif
 
 prefixdir = get_option('prefix')
-datadir = prefixdir / get_option('datadir')
+datadir = get_option('datadir')
 applicationsdir = datadir / 'applications'
 appdatadir = datadir / 'appdata'
 userunitdir = prefixdir / 'lib/systemd/user'
