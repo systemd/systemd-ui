@@ -4,7 +4,7 @@ xsltproc_flags = ['--nonet',
 
 xsl_file = 'http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl'
 xsltproc_cmdline = [xsltproc,
-                    '-o', '@OUTPUT',
+                    '-o', '@OUTPUT@',
                     xsltproc_flags,
                     xsl_file,
                     '@INPUT@']
