@@ -18,18 +18,8 @@ else
         project_minor_version = '0'
 endif
 
-# Meson ignores the preceding arguments when joining paths if an absolute
-# component is encountered, so this should canonicalize various paths when they
-# are absolute or relative.
 prefixdir = get_option('prefix')
-if not prefixdir.startswith('/')
-        error('Prefix is not absolute: "@0@"'.format(prefixdir))
-endif
-
-prefixdir_noslash = '/' + prefixdir.strip('/')
-bindir = prefixdir / get_option('bindir')
-libdir = prefixdir / get_option('libdir')
-datadir = prefixdir / get_option('datadir')
+datadir = get_option('datadir')
 applicationsdir = datadir / 'applications'
 appdatadir = datadir / 'appdata'
 userunitdir = prefixdir / 'lib/systemd/user'
@@ -92,8 +82,6 @@ possible_common_link_flags = [
         '-fstack-protector',
 ]
 
-c_args = get_option('c_args')
-
 # --as-needed and --no-undefined are provided by meson by default,
 # run 'meson configure' to see what is enabled
 possible_link_flags = [
@@ -136,8 +124,6 @@ add_project_link_arguments(
 userspace_c_args += cc.get_supported_arguments(possible_cc_flags)
 userspace_c_ld_args += cc.get_supported_link_arguments(possible_link_flags)
 
-cpp = ' '.join(cc.cmd_array() + get_option('c_args')) + ' -E'
-
 #####################################################################
 # compilation result tests
 
@@ -162,26 +148,10 @@ posix = meson.get_compiler('vala').find_library('posix')
 
 #####################################################################
 
-# meson_render_jinja2 = find_program('tools/meson-render-jinja2.py')
-
-#####################################################################
-
-# jinja2_cmdline = [meson_render_jinja2]
-
-userspace = declare_dependency(
+common_flags = declare_dependency(
         compile_args : userspace_c_args,
         link_args : userspace_c_ld_args,
 )
-
-#####################################################################
-
-executable_template = {
-        'install' : true,
-}
-
-executable_additional_kwargs = {
-        'dependencies' : userspace,
-}
 
 #####################################################################
 
@@ -196,10 +166,3 @@ endif
 install_data('LICENSE',
              'CODING_STYLE',
              install_dir : docdir)
-
-#####################################################################
-
-summary({
-        'prefix directory' :                prefixdir,
-        'lib directory' :                   libdir,
-        })
