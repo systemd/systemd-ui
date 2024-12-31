@@ -160,12 +160,6 @@ posix = meson.get_compiler('vala').find_library('posix')
 
 #####################################################################
 
-# meson_render_jinja2 = find_program('tools/meson-render-jinja2.py')
-
-#####################################################################
-
-# jinja2_cmdline = [meson_render_jinja2]
-
 userspace = declare_dependency(
         compile_args : userspace_c_args,
         link_args : userspace_c_ld_args,
