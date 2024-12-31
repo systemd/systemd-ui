@@ -18,14 +18,7 @@ else
         project_minor_version = '0'
 endif
 
-# Meson ignores the preceding arguments when joining paths if an absolute
-# component is encountered, so this should canonicalize various paths when they
-# are absolute or relative.
 prefixdir = get_option('prefix')
-if not prefixdir.startswith('/')
-        error('Prefix is not absolute: "@0@"'.format(prefixdir))
-endif
-
 datadir = prefixdir / get_option('datadir')
 applicationsdir = datadir / 'applications'
 appdatadir = datadir / 'appdata'
