@@ -13,4 +13,4 @@ sgapa = executable('systemd-gnome-ask-password-agent', sgapa_files,
 install_data('systemd-gnome-ask-password-agent.rules', install_dir: polkitrulesdir)
 sgapa_units = files('systemd-gnome-ask-password-agent.path',
                     'systemd-gnome-ask-password-agent.service')
-install_data(sgapa_units, install_dir: polkitrulesdir)
+install_data(sgapa_units, install_dir: userunitdir)
