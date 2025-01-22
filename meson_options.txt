@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 option('man', type : 'feature',
-       value : 'disabled',
+       value : 'auto',
        description : 'build and install man pages')
 
 option('docdir', type : 'string',
