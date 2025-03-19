@@ -123,7 +123,7 @@ class Watch : GLib.Object {
 
         bool load_password(File file) throws GLib.Error {
                 KeyFile key_file = new KeyFile();
-                int timeout = 5000;
+                int? timeout = null;
                 string socket;
                 string message;
                 string icon;
@@ -178,11 +178,13 @@ class Watch : GLib.Object {
 
                 string n_id = "password-request-%s".printf(socket);
                 app.send_notification(n_id, n);
-                uint s = GLib.Timeout.add_once(timeout, () => {
-                        app.withdraw_notification(n_id);
-                        app.timeouts.unset(socket);
+                if (timeout != null) {
+                        uint s = GLib.Timeout.add_once((!) timeout, () => {
+                                app.withdraw_notification(n_id);
+                                app.timeouts.unset(socket);
                 });
-                app.timeouts[socket] = s;
+                        app.timeouts[socket] = s;
+                }
 
                 return true;
         }
