@@ -4,6 +4,7 @@ systemadm = executable('systemadm', systemadm_files,
                        dependencies: [common_flags, gtk3, gee, posix],
                        install: true)
 install_data('io.systemd.systemadm.desktop', install_dir: applicationsdir)
+install_data('io.systemd.systemadm.svg', install_dir: iconsdir)
 install_data('io.systemd.systemadm.metainfo.xml', install_dir: metainfodir)
 
 sgapa_files = files('gnome-ask-password-agent.vala')

@@ -2,7 +2,7 @@
 Name=systemadm
 Comment=Manage systemd units
 Exec=systemadm
-Icon=applications-system
+Icon=io.systemd.systemadm
 Terminal=false
 Type=Application
 Categories=System;Settings;
