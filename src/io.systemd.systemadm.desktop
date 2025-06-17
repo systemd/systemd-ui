@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=systemadm
-Comment=Manage Systemd Units
+Comment=Manage systemd units
 Exec=systemadm
 Icon=applications-system
 Terminal=false

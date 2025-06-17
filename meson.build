@@ -21,7 +21,7 @@ endif
 prefixdir = get_option('prefix')
 datadir = get_option('datadir')
 applicationsdir = datadir / 'applications'
-appdatadir = datadir / 'appdata'
+metainfodir = datadir / 'metainfo'
 userunitdir = prefixdir / 'lib/systemd/user'
 
 polkitrulesdir = datadir / 'polkit-1/rules.d'
