@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2014 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> -->
+<component type="desktop-application">
+  <id>io.systemd.systemadm</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later</project_license>
+  <name>systemadm</name>
+  <developer id="io.systemd">
+    <name>systemd</name>
+  </developer>
+  <summary>Manage systemd units</summary>
+  <description>
+    <p>
+      systemadm is the graphical browser for systemd units. It
+      can show the list of units, possibly filtered by type.
+      For individual units, name, description and dependencies
+      with other units will be shown.
+    </p>
+
+    <p>
+      This tool has been largely obsoleted by the commandline
+      tools like systemctl and systemd-analyze. Bugs are likely
+      to be present.
+    </p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://in.waw.pl/~zbyszek/systemd/systemadm-main-window.png</image>
+      <caption>Main window</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://in.waw.pl/~zbyszek/systemd/systemadm-sockets-target.png</image>
+      <caption>Unit details</caption>
+    </screenshot>
+  </screenshots>
+  <url type="bugtracker">https://github.com/systemd/systemd-ui/issues</url>
+  <url type="homepage">https://systemd.io</url>
+  <content_rating type="oars-1.1"/>
+  <launchable type="desktop-id">io.systemd.systemadm.desktop</launchable>
+  <update_contact>zbyszek@in.waw.pl</update_contact>
+</component>

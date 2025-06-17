@@ -3,8 +3,8 @@ systemadm_files = files('systemadm.vala',
 systemadm = executable('systemadm', systemadm_files,
                        dependencies: [common_flags, gtk3, gee, posix],
                        install: true)
-install_data('systemadm.desktop', install_dir: applicationsdir)
-install_data('systemadm.appdata.xml', install_dir: appdatadir)
+install_data('io.systemd.systemadm.desktop', install_dir: applicationsdir)
+install_data('io.systemd.systemadm.metainfo.xml', install_dir: metainfodir)
 
 sgapa_files = files('gnome-ask-password-agent.vala')
 sgapa = executable('systemd-gnome-ask-password-agent', sgapa_files,
