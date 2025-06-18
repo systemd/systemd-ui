@@ -1,27 +1,26 @@
 systemd System and Service Manager UI
 
 DETAILS:
-        http://0pointer.de/blog/projects/systemd.html
+        https://0pointer.de/blog/projects/systemd.html
 
 WEB SITE:
-        http://www.freedesktop.org/wiki/Software/systemd
+        https://systemd.io
 
 GIT:
-        git://anongit.freedesktop.org/systemd/systemd-ui
-        ssh://git.freedesktop.org/git/systemd/systemd-ui
+        https://github.com/systemd/systemd-ui.git
+        ssh://git@github.com/systemd/systemd-ui.git
 
 GITWEB:
-        http://cgit.freedesktop.org/systemd/systemd-ui
+        https://github.com/systemd/systemd-ui
 
 MAILING LIST:
-        http://lists.freedesktop.org/mailman/listinfo/systemd-devel
-        http://lists.freedesktop.org/mailman/listinfo/systemd-commits
+        https://lists.freedesktop.org/mailman/listinfo/systemd-devel
 
 IRC:
-        #systemd on irc.freenode.org
+        #systemd on libera.chat
 
 BUG REPORTS:
-        https://bugs.freedesktop.org/enter_bug.cgi?product=systemd
+        https://github.com/systemd/systemd-ui/issues
 
 AUTHOR:
         Lennart Poettering with major support from Kay Sievers
