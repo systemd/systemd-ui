@@ -21,6 +21,7 @@ endif
 prefixdir = get_option('prefix')
 datadir = get_option('datadir')
 applicationsdir = datadir / 'applications'
+iconsdir = datadir / 'icons/hicolor/scalable/apps'
 metainfodir = datadir / 'metainfo'
 userunitdir = prefixdir / 'lib/systemd/user'
 
