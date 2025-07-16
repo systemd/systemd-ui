@@ -2,6 +2,7 @@
   This file is part of systemd.
 
   Copyright 2010 Lennart Poettering
+  Copyright 2024 Ben Boeckel
 
   systemd is free software; you can redistribute it and/or modify it
   under the terms of the GNU General Public License as published by
@@ -17,10 +18,10 @@
   along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
+using Gee;
 using Gtk;
 using GLib;
 using Posix;
-using Notify;
 
 [CCode (cheader_filename = "time.h")]
 extern int clock_gettime(int id, out timespec ts);
@@ -29,8 +30,8 @@ public class PasswordDialog : Dialog {
 
         public Entry entry;
 
-        public PasswordDialog(string message, string icon) {
-                set_title("System Password");
+        public PasswordDialog(string domain, string message, string icon) {
+                set_title("%s Password".printf(domain));
                 set_border_width(8);
                 set_default_response(ResponseType.OK);
                 set_icon_name(icon);
@@ -68,87 +69,69 @@ public class PasswordDialog : Dialog {
         }
 }
 
-public class MyStatusIcon : StatusIcon {
-
+class Watch : GLib.Object {
         File directory;
-        File current;
         FileMonitor file_monitor;
 
-        string message;
-        string icon;
-        string socket;
+        private weak Application app;
 
-        PasswordDialog password_dialog;
-        Notify.Notification n;
+        string title;
+        string domain_display;
+        string domain;
 
-        public MyStatusIcon() throws GLib.Error {
-                GLib.Object(icon_name : "dialog-password");
-                set_title("System Password Request");
+        public Watch(Application gapp, string domain, string path) throws GLib.Error {
+                app = gapp;
 
-                directory = File.new_for_path("/run/systemd/ask-password/");
+                directory = File.new_for_path(path);
                 file_monitor = directory.monitor_directory(0);
                 file_monitor.changed.connect(file_monitor_changed);
 
-                current = null;
-                look_for_password();
+                domain_display = "%s%s".printf(domain.ascii_up(1), domain.substring(1));
+                title = "Password Request (%s)".printf(domain_display);
+                this.domain = domain;
 
-                activate.connect(status_icon_activate);
+                look_in_directory(directory);
+        }
+
+        void look_in_directory(File dir) throws GLib.Error {
+                FileEnumerator enumerator = dir.enumerate_children("standard::name", FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
+
+                FileInfo i;
+                while ((i = enumerator.next_file()) != null) {
+                        if (!i.get_name().has_prefix("ask.")) {
+                                continue;
+                        }
+
+                        load_password(dir.get_child(i.get_name()));
+                }
         }
 
         void file_monitor_changed(GLib.File file, GLib.File? other_file, GLib.FileMonitorEvent event_type) {
-
-                if (!file.get_basename().has_prefix("ask."))
+                if (!file.get_basename().has_prefix("ask.")) {
                         return;
+                }
 
                 if (event_type == FileMonitorEvent.CREATED ||
                     event_type == FileMonitorEvent.DELETED) {
                         try {
-                                look_for_password();
+                                load_password(file);
                         } catch (Error e) {
                                 show_error(e.message);
                         }
                 }
         }
 
-        void look_for_password() throws GLib.Error {
-
-                if (current != null) {
-                        if (!current.query_exists()) {
-                                current = null;
-                                if (password_dialog != null)
-                                        password_dialog.response(ResponseType.REJECT);
-                        }
-                }
-
-                if (current == null) {
-                        FileEnumerator enumerator = directory.enumerate_children("standard::name", FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
-
-                        FileInfo i;
-                        while ((i = enumerator.next_file()) != null) {
-                                if (!i.get_name().has_prefix("ask."))
-                                        continue;
-
-                                current = directory.get_child(i.get_name());
-
-                                if (load_password())
-                                        break;
-
-                                current = null;
-                        }
-                }
-
-                if (current == null)
-                        set_visible(false);
-        }
-
-        bool load_password() throws GLib.Error {
-
+        bool load_password(File file) throws GLib.Error {
                 KeyFile key_file = new KeyFile();
+                int? timeout = null;
+                string socket;
+                string message;
+                string icon;
 
                 try {
                         timespec ts;
 
-                        key_file.load_from_file(current.get_path(), KeyFileFlags.NONE);
+                        key_file.load_from_file(file.get_path(), KeyFileFlags.NONE);
 
                         string not_after_as_string = key_file.get_string("Ask", "NotAfter");
 
@@ -157,11 +140,17 @@ public class MyStatusIcon : StatusIcon {
 
                         uint64 not_after = uint64.parse(not_after_as_string);;
                         if ((not_after == 0 && GLib.errno == Posix.EINVAL) ||
-                            (not_after == int64.MAX && GLib.errno == Posix.ERANGE))
+                            (not_after == int64.MAX && GLib.errno == Posix.ERANGE)) {
                                 return false;
+                        }
 
-                        if (not_after > 0 && not_after < now)
+                        if (not_after > 0 && not_after < now) {
                                 return false;
+                        }
+
+                        if (not_after > 0) {
+                                timeout = (int)(not_after - now) / 1000;
+                        }
 
                         socket = key_file.get_string("Ask", "Socket");
                 } catch (GLib.Error e) {
@@ -171,51 +160,142 @@ public class MyStatusIcon : StatusIcon {
                 try {
                         message = key_file.get_string("Ask", "Message").compress();
                 } catch (GLib.Error e) {
-                        message = "Please Enter System Password!";
+                        message = "Please Enter %s Password!".printf(domain_display);
                 }
-
-                set_tooltip_text(message);
 
                 try {
                         icon = key_file.get_string("Ask", "Icon");
                 } catch (GLib.Error e) {
                         icon = "dialog-password";
                 }
-                set_from_icon_name(icon);
 
-                n = new Notify.Notification(title, message, icon);
-                n.set_timeout(5000);
-                n.closed.connect(() => {
-                        set_visible(true);
+                GLib.Notification n = new GLib.Notification(title);
+                n.set_category("password.request." + domain);
+                n.set_body(message);
+                n.set_priority(GLib.NotificationPriority.NORMAL);
+                n.set_icon(new ThemedIcon(icon));
+                n.add_button_with_target("Enter password", "app.password-request", "(ssss)", domain, message, icon, socket);
+
+                string n_id = "password-request-%s".printf(socket);
+                app.send_notification(n_id, n);
+                if (timeout != null) {
+                        uint s = GLib.Timeout.add_once((!) timeout, () => {
+                                app.withdraw_notification(n_id);
+                                app.timeouts.unset(socket);
                 });
-                n.add_action("enter_pw", "Enter password", status_icon_activate);
-                n.show();
+                        app.timeouts[socket] = s;
+                }
 
                 return true;
         }
+}
 
-        void status_icon_activate() {
+void show_error(string e) {
+        Posix.stderr.printf("%s\n", e);
+        var m = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE, "%s", e);
+        m.run();
+        m.destroy();
+}
 
-                if (current == null)
+class Application : Gtk.Application {
+        private static bool system = false;
+        private static bool user = false;
+
+        private Watch? system_watch = null;
+        private Watch? user_watch = null;
+
+        public Gee.HashMap<string, uint> timeouts;
+
+        private const OptionEntry entries[] = {
+                { "system", 's', OptionFlags.NONE, OptionArg.NONE, ref system, "Watch for system requests", null },
+                { "user", 'u', OptionFlags.NONE, OptionArg.NONE, ref user, "Watch for system requests", null },
+                { null }
+        };
+
+        private const GLib.ActionEntry actions[] = {
+                { "password-request", password_request, "(ssss)" },
+        };
+
+        public Application() {
+                Object(application_id: "org.freedesktop.systemd.gnome-ask-password-agent",
+                       flags: GLib.ApplicationFlags.IS_SERVICE);
+                add_main_option_entries(entries);
+                add_action_entries(actions, this);
+                set_default(this);
+
+                timeouts = new Gee.HashMap<string, uint>();
+        }
+
+        protected override void startup() {
+                if (system) {
+                        system_watch = add_watch("system", "/run/systemd/ask-password/");
+                }
+
+                if (user) {
+                        string? xdg_runtime_dir = Environment.get_variable("XDG_RUNTIME_DIR");
+                        if (xdg_runtime_dir == null) {
+                                show_error("no user XDG runtime directory");
+                        } else {
+                                add_watch("user", (!) xdg_runtime_dir + "/systemd/ask-password/");
+                        }
+                }
+
+                if (system_watch != null || user_watch != null) {
+                        hold();
+                } else {
+                        show_error("no watches requested");
+                }
+        }
+
+        private Watch? add_watch(string domain, string path) {
+                try {
+                        return new Watch(this, domain, path);
+                } catch (IOError e) {
+                        show_error("failed to set up %s watches on %s: %s".printf(domain, path, e.message));
+                } catch (GLib.Error e) {
+                        show_error("failed to set up %s watches on %s: %s".printf(domain, path, e.message));
+                }
+
+                return null;
+        }
+
+        private static void password_request(GLib.SimpleAction action, GLib.Variant? variant) {
+                var gapp = GLib.Application.get_default();
+                if (gapp == null) {
                         return;
+                }
+                var app = (Application) (!) gapp;
 
-                if (password_dialog != null) {
-                        password_dialog.present();
+                if (variant.n_children() != 4) {
                         return;
                 }
 
-                password_dialog = new PasswordDialog(message, icon);
+                string domain = variant.get_child_value(0).get_string();
+                string message = variant.get_child_value(1).get_string();
+                string icon = variant.get_child_value(2).get_string();
+                string socket = variant.get_child_value(3).get_string();
+
+                if (domain.length == 0 || message.length == 0 || icon.length == 0 || socket.length == 0) {
+                        show_error("invalid password request (domain: '%s', message: '%s', icon: '%s', socket: '%s')".printf(domain, message, icon, socket));
+                        return;
+                }
+
+                PasswordDialog password_dialog = new PasswordDialog(domain, message, icon);
 
                 int result = password_dialog.run();
                 string password = password_dialog.entry.get_text();
-
                 password_dialog.destroy();
-                password_dialog = null;
+
+                uint n_id;
+                if (app.timeouts.unset(socket, out n_id)) {
+                        GLib.Source.remove(n_id);
+                }
 
                 if (result == ResponseType.REJECT ||
                     result == ResponseType.DELETE_EVENT ||
-                    result == ResponseType.CANCEL)
+                    result == ResponseType.CANCEL) {
                         return;
+                }
 
                 Pid child_pid;
                 int to_process;
@@ -241,31 +321,15 @@ public class MyStatusIcon : StatusIcon {
                         show_error(e.message);
                 }
         }
-}
 
-const OptionEntry entries[] = {
-        { null }
-};
-
-void show_error(string e) {
-        Posix.stderr.printf("%s\n", e);
-        var m = new MessageDialog(null, 0, MessageType.ERROR, ButtonsType.CLOSE, "%s", e);
-        m.run();
-        m.destroy();
-}
-
-int main(string[] args) {
-        try {
-                Gtk.init_with_args(ref args, "[OPTION...]", entries, "systemd-ask-password-agent");
-                Notify.init("Password Agent");
-
-                MyStatusIcon i = new MyStatusIcon();
-                Gtk.main();
-        } catch (IOError e) {
-                show_error(e.message);
-        } catch (GLib.Error e) {
-                Posix.stderr.printf("%s\n", e.message);
+        public static int main(string[] args) {
+                try {
+                        Gtk.init_with_args(ref args, "[OPTION...]", entries, "systemd-ask-password-agent");
+                } catch (GLib.Error e) {
+                        Posix.stderr.printf("%s\n", e.message);
+                        return 1;
+                }
+                Application app = new Application();
+                return app.run(args);
         }
-
-        return 0;
 }
