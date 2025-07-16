@@ -135,7 +135,7 @@ endif
 
 #####################################################################
 
-xsltproc = find_program('xsltproc', required: get_option('man').allowed())
+xsltproc = find_program('xsltproc', required: get_option('man'))
 
 #####################################################################
 
@@ -160,9 +160,7 @@ subdir('src')
 
 #####################################################################
 
-if xsltproc.found()
-        subdir('man')
-endif
+subdir('man', if_found: xsltproc)
 
 install_data('LICENSE',
              'CODING_STYLE',
